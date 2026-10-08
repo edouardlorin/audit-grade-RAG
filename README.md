@@ -84,7 +84,7 @@ docs/            full installation and operations guide (PDF)
 
 ## Getting started
 
-The full procedure, with a checkpoint after every step, is in **[docs/Install-Guide-v2.pdf](docs/Install-Guide-v2.pdf)**. In outline:
+The full procedure, with a checkpoint after every step, is in **[RAG-Standards-Install-Guide-v2.pdf](RAG-Standards-Install-Guide-v2.pdf)**. In outline:
 
 1. Prepare the host: NVIDIA driver, Python 3.11, Docker Desktop, Ollama.
 2. Start Qdrant from `qdrant/` on a named Docker volume.
