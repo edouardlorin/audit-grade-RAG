@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS-25 clause lookup</title>
+<style>
+:root{
+  --paper:#F7F8FA;
+  --card:#FFFFFF;
+  --ink:#16202C;
+  --ink-soft:#5A6672;
+  --rule:#D5DBE1;
+  --verified:#1D6B5A;
+  --withheld:#8A5A00;
+  --absent:#3D5A80;
+  --focus:#2B6CB0;
+  --sans:ui-sans-serif,"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"DejaVu Sans Mono",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:32px 24px 96px}
+
+/* ---------- header ---------- */
+header{display:flex;align-items:baseline;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--rule);padding-bottom:14px}
+h1{font-size:1.25rem;font-weight:620;letter-spacing:-0.01em;margin:0}
+.corpus{font-family:var(--mono);font-size:.8rem;color:var(--ink-soft)}
+.corpus b{font-weight:600;color:var(--ink)}
+
+/* ---------- ask ---------- */
+form{margin:24px 0 0}
+label{display:block;font-size:.9rem;color:var(--ink-soft);margin-bottom:8px}
+textarea{
+  width:100%;min-height:84px;resize:vertical;padding:12px 14px;
+  font:inherit;color:var(--ink);background:var(--card);
+  border:1px solid var(--rule);border-radius:4px;
+}
+textarea:focus-visible{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
+.row{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+button{
+  font:inherit;font-weight:560;padding:9px 20px;border-radius:4px;
+  border:1px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;
+}
+button:hover:not(:disabled){background:#23313F}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.hint{font-size:.82rem;color:var(--ink-soft)}
+.examples{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+  font:inherit;font-size:.82rem;font-weight:400;padding:5px 11px;
+  background:transparent;color:var(--ink-soft);
+  border:1px solid var(--rule);border-radius:999px;
+}
+.chip:hover{background:var(--card);color:var(--ink);border-color:var(--ink-soft)}
+
+/* ---------- verdict band: the one loud element ---------- */
+#result{margin-top:36px}
+.verdict{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  background:var(--card);border:1px solid var(--rule);
+  border-left:6px solid var(--st);border-radius:4px;padding:14px 18px;
+}
+.verdict .state{font-size:1.05rem;font-weight:640;color:var(--st);letter-spacing:-0.01em}
+.verdict .meta{font-family:var(--mono);font-size:.78rem;color:var(--ink-soft);margin-left:auto}
+[data-status="answered"]{--st:var(--verified)}
+[data-status="not_in_corpus"]{--st:var(--absent)}
+[data-status="unverified"]{--st:var(--withheld)}
+[data-status="error"]{--st:#A13B2E}
+
+.answer{
+  background:var(--card);border:1px solid var(--rule);border-top:0;
+  border-radius:0 0 4px 4px;padding:20px 22px;max-width:68ch;
+}
+.verdict + .answer{border-radius:0 0 4px 4px;margin-top:-1px}
+.answer p{margin:0 0 .85em}
+.answer p:last-child{margin-bottom:0}
+.answer ul{margin:.4em 0 .85em;padding-left:1.2em}
+.note{color:var(--ink-soft);font-size:.92rem}
+
+/* marker chips */
+.mk{
+  font-family:var(--mono);font-size:.78em;font-weight:600;
+  color:var(--verified);background:#EAF2EF;border:1px solid #C5DCD5;
+  border-radius:3px;padding:0 4px;text-decoration:none;white-space:nowrap;
+}
+.mk:hover,.mk:focus-visible{background:var(--verified);color:#fff;border-color:var(--verified)}
+
+/* ---------- sources ---------- */
+h2{font-size:.95rem;font-weight:620;margin:28px 0 10px}
+table{width:100%;border-collapse:collapse;font-size:.9rem;background:var(--card)}
+th{
+  text-align:left;font-weight:600;font-size:.8rem;color:var(--ink-soft);
+  border-bottom:1px solid var(--rule);padding:8px 10px;
+}
+td{border-bottom:1px solid var(--rule);padding:10px;vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.id{font-family:var(--mono);white-space:nowrap;font-weight:560}
+td.pg,td.sc{font-family:var(--mono);text-align:right;white-space:nowrap;color:var(--ink-soft)}
+tr.flash td{background:#FFF6DC;transition:background .9s ease}
+@media (prefers-reduced-motion:reduce){tr.flash td{transition:none}}
+.problems{margin:14px 0 0;padding:12px 16px;background:#FDF6E8;
+  border:1px solid #E8D9B4;border-radius:4px;font-size:.88rem}
+.problems ul{margin:6px 0 0;padding-left:1.1em}
+
+/* ---------- status / footer ---------- */
+.working{display:flex;align-items:center;gap:10px;color:var(--ink-soft);font-size:.92rem}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--focus);
+  animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none;opacity:.7}}
+.tools{margin-top:20px;display:flex;gap:10px}
+.tools button{background:transparent;color:var(--ink);border-color:var(--rule);font-weight:480;padding:7px 14px}
+.tools button:hover{border-color:var(--ink-soft);background:var(--card)}
+.stamp{display:none}
+
+/* ---------- print: a filable record ---------- */
+@media print{
+  body{background:#fff;font-size:11pt}
+  .wrap{max-width:none;padding:0}
+  form,.examples,.tools,.corpus{display:none !important}
+  .stamp{display:block;font-family:var(--mono);font-size:9pt;
+    color:#444;margin-top:18px;border-top:1px solid #999;padding-top:6px}
+  .verdict,.answer,table{border-color:#999}
+  .askedq{display:block;margin:14px 0 18px;font-weight:600}
+  a.mk{color:#000;background:none;border:0;text-decoration:none}
+  tr,td,th{page-break-inside:avoid}
+}
+.askedq{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>CS-25 clause lookup</h1>
+    <div class="corpus" id="corpus">connecting…</div>
+  </header>
+
+  <form id="form">
+    <label for="q">Ask about a design, test or qualification requirement</label>
+    <textarea id="q" placeholder="Within what time must the maximum seating capacity be evacuated?"
+      autofocus></textarea>
+    <div class="row">
+      <button type="submit" id="go">Ask</button>
+      <span class="hint">Ctrl + Enter to send. Answers cite document, clause and page.</span>
+    </div>
+    <div class="examples" id="examples"></div>
+  </form>
+
+  <div id="result" aria-live="polite"></div>
+
+</div>
+
+<script>
+const EXAMPLES = [
+  "Within what time must the maximum seating capacity be evacuated?",
+  "What colours must be used for warning, caution and advisory lights?",
+  "What maximum cabin pressure altitude is permitted in normal operation?",
+  "What is the recommended torque for M6 stainless fasteners?"
+];
+
+const $ = s => document.querySelector(s);
+const result = $("#result"), qBox = $("#q"), go = $("#go");
+let lastPayload = null;
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+EXAMPLES.forEach(t => {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "chip"; b.textContent = t;
+  b.onclick = () => { qBox.value = t; qBox.focus(); };
+  $("#examples").appendChild(b);
+});
+
+fetch("/health").then(r => r.json()).then(h => {
+  $("#corpus").innerHTML = h.points != null
+    ? `<b>${h.points.toLocaleString()}</b> passages · ${esc(h.collection)} · ${esc(h.model)}`
+    : "API reachable";
+}).catch(() => { $("#corpus").textContent = "API unreachable"; });
+
+/* Escape first, then turn [S1] into a link. Never inject model text raw. */
+function renderAnswer(text, nSources) {
+  return esc(text)
+    .replace(/\[S(\d+)\]/g, (m, n) =>
+      (+n >= 1 && +n <= nSources)
+        ? `<a class="mk" href="#s${n}" data-s="${n}">[S${n}]</a>` : m)
+    .split(/\n{2,}/).map(block => {
+      const lines = block.split("\n");
+      if (lines.every(l => /^\s*[-*\u2022]/.test(l)))
+        return "<ul>" + lines.map(l =>
+          `<li>${l.replace(/^\s*[-*\u2022]\s*/, "")}</li>`).join("") + "</ul>";
+      return `<p>${lines.join("<br>")}</p>`;
+    }).join("");
+}
+
+const STATE = {
+  answered:      "Answered and verified",
+  not_in_corpus: "Not in corpus",
+  unverified:    "Withheld — could not verify"
+};
+
+function render(q, d) {
+  lastPayload = { q, d };
+  const st = d.status, sources = d.sources || [];
+  const parts = [];
+
+  parts.push(`<div class="verdict" data-status="${esc(st)}">
+      <span class="state">${esc(STATE[st] || st)}</span>
+      <span class="meta">${d.latency_s ?? "?"}s${
+        d.best_score != null ? " · top score " + d.best_score : ""}</span>
+    </div>`);
+
+  parts.push(`<div class="answer" data-status="${esc(st)}">
+      <span class="askedq">Q: ${esc(q)}</span>
+      ${st === "answered"
+        ? renderAnswer(d.answer || "", sources.length)
+        : `<p class="note">${esc(d.answer || "")}</p>`}
+    </div>`);
+
+  if (d.problems && d.problems.length)
+    parts.push(`<div class="problems"><strong>Verification problems</strong>
+      <ul>${d.problems.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>`);
+
+  if (sources.length) {
+    parts.push(`<h2>Sources</h2><table><thead><tr>
+        <th style="width:3.5rem">Ref</th><th style="width:11rem">Clause</th>
+        <th>Title and document</th>
+        <th style="width:5rem">Page</th><th style="width:5rem">Score</th>
+      </tr></thead><tbody>` +
+      sources.map((s, i) => {
+        const n = (s.marker || "").replace(/\D/g, "") || (i + 1);
+        return `<tr id="s${n}">
+          <td class="id">[S${n}]</td>
+          <td class="id">${esc(s.clause_no || "")}</td>
+          <td>${esc(s.citation || "")}</td>
+          <td class="pg">${s.page != null ? "p. " + esc(s.page) : "—"}</td>
+          <td class="sc">${s.rerank_score ?? ""}</td></tr>`;
+      }).join("") + `</tbody></table>`);
+  }
+
+  parts.push(`<div class="tools">
+      <button type="button" id="copy">Copy answer and citations</button>
+      <button type="button" id="print">Print record</button>
+    </div>
+    <div class="stamp">CS-25 clause lookup — generated ${
+      new Date().toISOString().replace("T", " ").slice(0, 19)} UTC</div>`);
+
+  result.innerHTML = parts.join("");
+
+  result.querySelectorAll("a.mk").forEach(a => a.onclick = e => {
+    e.preventDefault();
+    const row = document.getElementById("s" + a.dataset.s);
+    if (!row) return;
+    row.scrollIntoView({ block: "center",
+      behavior: matchMedia("(prefers-reduced-motion:reduce)").matches
+        ? "auto" : "smooth" });
+    row.classList.remove("flash"); void row.offsetWidth; row.classList.add("flash");
+  });
+
+  const c = $("#copy");
+  if (c) c.onclick = () => {
+    const lines = [q, "", d.answer || ""];
+    if (sources.length) {
+      lines.push("", "Sources:");
+      sources.forEach(s => lines.push(`  ${s.marker} ${s.citation}`));
+    }
+    navigator.clipboard.writeText(lines.join("\n"))
+      .then(() => { c.textContent = "Copied"; setTimeout(() => {
+        c.textContent = "Copy answer and citations"; }, 1600); });
+  };
+  const p = $("#print");
+  if (p) p.onclick = () => window.print();
+}
+
+async function ask(q) {
+  go.disabled = true;
+  const t0 = Date.now();
+  result.innerHTML = `<div class="working"><span class="dot"></span>
+    <span>Searching the corpus and drafting a cited answer…
+    <b id="el">0</b>s</span></div>`;
+  const tick = setInterval(() => {
+    const el = $("#el");
+    if (el) el.textContent = Math.round((Date.now() - t0) / 1000);
+  }, 1000);
+
+  try {
+    const r = await fetch("/ask", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: q })
+    });
+    if (!r.ok) throw new Error("API returned " + r.status);
+    render(q, await r.json());
+  } catch (err) {
+    result.innerHTML = `<div class="verdict" data-status="error">
+      <span class="state">Request failed</span></div>
+      <div class="answer"><p class="note">${esc(err.message)}. Check that
+      rag-api, retrieval-svc and Qdrant are all running.</p></div>`;
+  } finally {
+    clearInterval(tick); go.disabled = false;
+  }
+}
+
+$("#form").onsubmit = e => {
+  e.preventDefault();
+  const q = qBox.value.trim();
+  if (q) ask(q);
+};
+qBox.addEventListener("keydown", e => {
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) $("#form").requestSubmit();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+﻿warning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.
+median body size: 11.00   PROMINENCE=1.04 -> heading needs size >= 11.44 or bold
+dumping pages [1313, 1314]
+
+====================================================================================================
+PDF page 1313   label=''
+====================================================================================================
+
+  y0=  37.9  size= 9.00  bold=True  -> body
+     flags: in-header-zone
+     text: 'Easy Access Rules for Large Aeroplanes'
+
+  y0=  48.9  size= 9.00  bold=True  -> body
+     text: '(CS-25)'
+
+  y0= 111.8  size=15.96  bold=True  -> body
+     text: 'A PPENDIX H û I NSTRUCTIONS FOR C ONTINUED A IRWORTHINESS'
+
+  y0= 183.2  size=15.96  bold=True  -> body
+     text: 'H25.1 General'
+
+  y0= 425.5  size=15.96  bold=True  -> body
+     text: 'H25.2 Format'
+
+  y0= 523.8  size=15.96  bold=True  -> body
+     text: 'H25.3 Content'
+====================================================================================================
+PDF page 1314   label=''
+====================================================================================================
+
+  y0=  37.9  size= 9.00  bold=True  -> body
+     flags: in-header-zone
+     text: 'Easy Access Rules for Large Aeroplanes'
+
+  y0=  48.9  size= 9.00  bold=True  -> body
+     text: '(CS-25)'
+
+  y0= 588.0  size=15.96  bold=True  -> body
+     text: 'H25.4 Airworthiness Limitations Section'
+
+What to look for:
+  - the heading text is not what you assumed (a prefix in front of
+    'Appendix' breaks the ^ anchor in APPENDIX_RE)
+  - the heading is split across two blocks
+  - 'not-prominent': the heading is set in body type
+  - 'TOC-FILTERED' on a real heading: the dot ratio is too tight

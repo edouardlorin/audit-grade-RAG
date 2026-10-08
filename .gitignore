@@ -1,0 +1,36 @@
+# --- Cmd lines ---
+CmdLines.md
+
+# ---- secrets: never commit ----
+.env
+*.env
+qdrant/.env
+*.zip
+
+# ---- large or machine-specific ----
+.venv/
+models/
+qdrant/snapshots/
+qdrant/backup/
+qdrant/storage/
+
+# ---- source documents: usually copyrighted, always large ----
+corpus/raw/
+corpus/ocr/
+!docs/*.pdf
+corpus/*.xml
+
+# ---- your own register and query history ----
+corpus/registry.yaml
+logs/
+*.jsonl
+eval/index_manifest.json
+
+# ---- Python / editor noise ----
+__pycache__/
+*.pyc
+.pytest_cache/
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini

@@ -1,0 +1,75 @@
+questions:
+  # ================= IN CORPUS =================
+
+  - id: q001
+    question: "Within what time must the maximum seating capacity be evacuated
+               under simulated emergency conditions, and for which aeroplanes
+               does this apply?"
+    expect: in_corpus
+    gold: [{doc_id: "CS-25", clause_no: "CS 25.803"}]
+    note: "verified. 90 s, >44 passenger seats, demo per Appendix J"
+
+  - id: q002
+    question: "What acceptable means of compliance does EASA accept for
+               demonstrating emergency evacuation?"
+    expect: in_corpus
+    gold: [{doc_id: "CS-25", clause_no: "AMC 25.807"}]
+    note: "verified. Emergency Exits Uniformity in AMC 25.807(e)"
+
+  - id: q003
+    question: "What probability target applies to a catastrophic failure
+               condition, and what analysis methods are acceptable to show
+               compliance?"
+    expect: in_corpus
+    gold:
+      - {doc_id: "CS-25", clause_no: "CS 25.1309"}
+      - {doc_id: "CS-25", clause_no: "AMC 25.1309"}
+    note: "multi-source: requirement in Book 1, method in Book 2"
+
+  - id: q004
+    question: "What maximum cabin pressure altitude is permitted in normal
+               operation?"
+    expect: in_corpus
+    gold: [{doc_id: "CS-25", clause_no: "CS 25.841"}]
+    note: "clause verified; confirm the 8 000 ft value in your amendment"
+
+  - id: q005
+    question: "What colours must be used for warning, caution and advisory
+               lights?"
+    expect: in_corpus
+    gold: [{doc_id: "CS-25", clause_no: "AMC 25.1322"}]
+    note: "verified. Good normative-force test: red / amber / any other colour. Should be Appendix 1 of this AMC..."
+
+  - id: q006
+    question: "What flammability requirements apply to compartment interior
+               materials?"
+    expect: in_corpus
+    gold: [{doc_id: "CS-25", clause_no: "CS 25.853"}]
+    note: "verified in index. Answer depends on Appendix F - tests cross-reference"
+
+  - id: q007
+    question: "What must the Instructions for Continued Airworthiness contain?"
+    expect: in_corpus
+    gold: [{doc_id: "CS-25", clause_no: "H25.1"}]
+    note: "VERIFY. Clause is a stub pointing at Appendix H, where content lives.
+           Add Appendix H to gold if your index splits it that way"
+
+  # ================= OUT OF CORPUS =================
+
+  - id: q008
+    question: "How many cabin crew members are required for an aeroplane with
+               200 passenger seats?"
+    expect: not_in_corpus
+    note: "adjacent. Operational rule (Reg. 965/2012). CS-25 certifies exits,
+           not crew complement - heavy vocabulary overlap with q001/q005"
+
+  - id: q009
+    question: "What endurance testing is required to certify the engine type?"
+    expect: not_in_corpus
+    note: "adjacent. CS-E. CS-25 covers powerplant INSTALLATION (25.901),
+           which will retrieve strongly and must still be refused"
+
+  - id: q010
+    question: "What is the recommended torque for M6 stainless steel fasteners?"
+    expect: not_in_corpus
+    note: "far negative. Regression tripwire"
