@@ -20,21 +20,8 @@ A system that answers well but occasionally invents is not 90% useful. It is unu
 
 Most of the pipeline is the familiar pattern: parse, chunk, embed, retrieve, rerank, generate. Three components are not, and they are the reason the output can be used as evidence.
 
-```mermaid
-flowchart LR
-    Q([Question]) --> E[BGE-M3<br/>dense + sparse]
-    E --> H[Qdrant<br/>hybrid search, RRF]
-    H --> R[bge-reranker-v2-m3<br/>top 50 → 6]
-    R --> G{Abstention gate<br/>score < τ ?}
-    G -- yes --> N([Not in corpus])
-    G -- no --> L[Ministral 3 14B<br/>emits S1..Sn markers only]
-    L --> V{Citation verifier}
-    V -- fails --> W([Withheld])
-    V -- passes --> A([Answer +<br/>resolved citations])
+<img width="1174" height="628" alt="AuditGradeRAG" src="https://github.com/user-attachments/assets/14503b25-4eaa-432e-bd10-3741ef5888d7" />
 
-    classDef audit fill:#EAF2EF,stroke:#1D6B5A,stroke-width:2px,color:#16202C
-    class G,V audit
-```
 
 **1. The abstention gate is control flow, not a prompt.** If the best reranked passage scores below threshold, the language model is never called. There is no opportunity to confabulate because no generation happens.
 
